@@ -6,8 +6,16 @@
 using namespace std;
 
 class ranking{
+    //liczba glosow, nr utworu
     vector<pair<int, int>> top7;
     unordered_map<int, int> liczba_glosow;
+
+    int min_top7_votes(){
+        if(top7.size() < 7)
+            return 0;
+
+        return top7[top7.size() - 1].second;
+    }
 
     void dodaj(unordered_set<int> glosy){
         for (const auto& nr_utworu: glosy) {
