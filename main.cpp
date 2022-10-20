@@ -10,6 +10,11 @@ class ranking {
     vector<pair<int, int>> top7;
     //<nr_utworu, liczba glosow>
     unordered_map<int, int> liczba_glosow_map;
+    // banned numbers
+    unordered_set<int32_t> banned_nums;
+
+    // constant top N
+    const int top_n = 7;
 
     bool czy_jest_utwor(int nr_utworu) {
         auto it = liczba_glosow_map.find(nr_utworu);
@@ -38,7 +43,7 @@ class ranking {
     }
 
     int min_top7_votes() {
-        if (top7.size() < 7)
+        if (top7.size() < top_n)
             return 0;
 
         return top7[top7.size() - 1].first;
@@ -83,13 +88,16 @@ public:
     pair<int, int> podaj_przeboj(int nr_w_rankingu) {
         return top7[nr_w_rankingu - 1];
     }
+
     // added to check if num already exists
     bool exists(int nr_utworu) {
         auto it = liczba_glosow_map.find(nr_utworu);
         return it != liczba_glosow_map.end();
     }
 
-    bool out(int nr_utworu) {
+    bool banned(int nr_utworu) {
+        if (banned_nums.contains(nr_utworu)) // works for c++20
+            return true;
         return false;
     }
 };
@@ -129,7 +137,6 @@ void TOP(ranking& ranking) {
      */
 }
 
-// we need to write ranking.out , that will check if we can set our voice on curr number
 void VOTE(int32_t lineCounter, string& input_line, regex& expression, int32_t max, ranking& ranking) {
     string lineCopy = input_line;
     string number;
@@ -137,7 +144,7 @@ void VOTE(int32_t lineCounter, string& input_line, regex& expression, int32_t ma
 
     while(!(number = findNum(input_line, expression)).empty()) {
         auto num = (int32_t) stol(number);
-        if (num > max || ranking.exists(num) || ranking.out(num)) { // OR can't vote on num
+        if (num > max || ranking.exists(num) || ranking.banned(num)) {
             errorLine(lineCounter, lineCopy);
             return;
         }
@@ -165,6 +172,7 @@ int main() {
     */
     int32_t lineCounter = 0;
     int32_t Max = 0;
+
     while (getline(cin, input_line)) {
         lineCounter++;
         if (regex_match(input_line, EMPTY_regex)) { continue; }
