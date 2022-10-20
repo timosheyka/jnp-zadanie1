@@ -85,27 +85,73 @@ public:
     }
 };
 
+string findNum(string& line, regex& expression) {
+    smatch match;
+    regex_search(line, match, expression);
+    string num = match.str(0);
+    line = match.suffix().str();
+    return num;
+}
+
+void errorLine(int32_t lineCounter, string& input_line) {
+    cerr << "Error in line " << lineCounter << ": " << input_line << '\n';
+}
+
+void NEW(int32_t lineCounter, string& input_line, regex& expression, int32_t& Max) {
+    string lineCopy = input_line;
+    int32_t newMax = (int32_t) stol(findNum(input_line, expression));
+    if (Max > newMax) { errorLine(lineCounter, lineCopy); return; }
+    if (Max > 0) {
+        /*
+        * instructions :
+        *  closeCurrRecord
+        *  coutCurrRecord
+        *  startNewRecord
+        *  setPoints
+        */
+    }
+}
+
+void TOP() {
+    /*
+     * instructions :
+     *  coutRecordSummary
+     */
+}
+
+void VOTE(int32_t lineCounter, string& input_line) {
+    /*
+     * instructions :
+     *  isValid (if differentVotesInLine == set.size())
+     *  convertToSet
+     */
+}
+
 int main() {
+
     string input_line;
-    //getline(cin, input_line);
-    regex NEW("\\s*NEW\\s+[1-9]([0-9]){0,7}\\s*"); // polecenie
-    regex TOP("\\s*TOP\\s*"); // polecenie
-    regex EMPTY("\\s*"); // ignored line
-    regex VOTE("\\s*[1-9][0-9]{0,7}\\s*(\\s+[1-9][0-9]{0,7}\\s*)*"); // vote -> unordered set
+    regex NEW_regex("\\s*NEW_regex\\s+0*[1-9]([0-9]){0,7}\\s*"); // instruction
+    regex TOP_regex("\\s*TOP_regex\\s*"); // instruction
+    regex EMPTY_regex("\\s*"); // ignored line
+    regex VOTE_regex("\\s*0*[1-9][0-9]{0,7}\\s*(\\s+0*[1-9][0-9]{0,7}\\s*)*"); // vote
+    regex NUM_regex("[1-9][0-9]{0,7}"); // number
 
-
+    /*
     ranking r = ranking();
     r.dodaj_zbior_glosow({2, 1, 3, 4, 5, 6, 7});
     r.dodaj_zbior_glosow({4});
     cout << r.podaj_przeboj(1).second;
     cout << r.podaj_przeboj(7).second;
-
-    /*
-     * Ranking
-     * 2 unordered map
-     */
-
-//    if (regex_match(input_line, VOTE))
-//        cout << "si";
+    */
+    int32_t lineCounter = 0;
+    int32_t Max = 0;
+    while(getline(cin, input_line)) {
+        lineCounter++;
+        if (regex_match(input_line, EMPTY_regex)) { continue; }
+        if (regex_match(input_line, NEW_regex)) { NEW(lineCounter, input_line, NUM_regex, Max); continue; }
+        if (regex_match(input_line, TOP_regex)) { TOP(); continue; }
+        if (regex_match(input_line, VOTE_regex)) { VOTE(lineCounter, input_line); continue; }
+        errorLine(lineCounter, input_line);
+    }
     return 0;
 }
