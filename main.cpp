@@ -83,6 +83,15 @@ public:
     pair<int, int> podaj_przeboj(int nr_w_rankingu) {
         return top7[nr_w_rankingu - 1];
     }
+    // added to check if num already exists
+    bool exists(int nr_utworu) {
+        auto it = liczba_glosow_map.find(nr_utworu);
+        return it != liczba_glosow_map.end();
+    }
+
+    bool out(int nr_utworu) {
+        return false;
+    }
 };
 
 string findNum(string& line, regex& expression) {
@@ -109,35 +118,46 @@ void NEW(int32_t lineCounter, string& input_line, regex& expression, int32_t& Ma
         *  startNewRecord
         *  setPoints
         */
+        Max = newMax;
     }
 }
 
-void TOP() {
+void TOP(ranking& ranking) {
     /*
      * instructions :
      *  coutRecordSummary
      */
 }
 
-void VOTE(int32_t lineCounter, string& input_line) {
-    /*
-     * instructions :
-     *  isValid (if differentVotesInLine == set.size())
-     *  convertToSet
-     */
+// we need to write ranking.out , that will check if we can set our voice on curr number
+void VOTE(int32_t lineCounter, string& input_line, regex& expression, int32_t max, ranking& ranking) {
+    string lineCopy = input_line;
+    string number;
+    unordered_set<int32_t> validator;
+
+    while(!(number = findNum(input_line, expression)).empty()) {
+        auto num = (int32_t) stol(number);
+        if (num > max || ranking.exists(num) || ranking.out(num)) { // OR can't vote on num
+            errorLine(lineCounter, lineCopy);
+            return;
+        }
+        validator.insert(num);
+    }
+    ranking.dodaj_zbior_glosow(validator);
 }
 
 int main() {
 
     string input_line;
-    regex NEW_regex("\\s*NEW_regex\\s+0*[1-9]([0-9]){0,7}\\s*"); // instruction
-    regex TOP_regex("\\s*TOP_regex\\s*"); // instruction
-    regex EMPTY_regex("\\s*"); // ignored line
-    regex VOTE_regex("\\s*0*[1-9][0-9]{0,7}\\s*(\\s+0*[1-9][0-9]{0,7}\\s*)*"); // vote
-    regex NUM_regex("[1-9][0-9]{0,7}"); // number
+    regex NEW_regex ("\\s*NEW_regex\\s+0*[1-9]([0-9]){0,7}\\s*"); // instruction
+    regex TOP_regex ("\\s*TOP_regex\\s*"); // instruction
+    regex EMPTY_regex ("\\s*"); // ignored line
+    regex VOTE_regex ("\\s*0*[1-9][0-9]{0,7}\\s*(\\s+0*[1-9][0-9]{0,7}\\s*)*"); // vote
+    regex NUM_regex ("[1-9][0-9]{0,7}"); // number
 
+
+    ranking rank = ranking();
     /*
-    ranking r = ranking();
     r.dodaj_zbior_glosow({2, 1, 3, 4, 5, 6, 7});
     r.dodaj_zbior_glosow({4});
     cout << r.podaj_przeboj(1).second;
@@ -145,12 +165,12 @@ int main() {
     */
     int32_t lineCounter = 0;
     int32_t Max = 0;
-    while(getline(cin, input_line)) {
+    while (getline(cin, input_line)) {
         lineCounter++;
         if (regex_match(input_line, EMPTY_regex)) { continue; }
         if (regex_match(input_line, NEW_regex)) { NEW(lineCounter, input_line, NUM_regex, Max); continue; }
-        if (regex_match(input_line, TOP_regex)) { TOP(); continue; }
-        if (regex_match(input_line, VOTE_regex)) { VOTE(lineCounter, input_line); continue; }
+        if (regex_match(input_line, TOP_regex)) { TOP(rank); continue; }
+        if (regex_match(input_line, VOTE_regex)) { VOTE(lineCounter, input_line, NUM_regex, Max, rank); continue; }
         errorLine(lineCounter, input_line);
     }
     return 0;
